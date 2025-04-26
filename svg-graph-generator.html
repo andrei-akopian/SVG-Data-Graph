@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>SVG Data Grapher</title>
+  </head>
+  <body>
+    <main>
+        <h1>SVG Data Grapher</h1>  
+        <input id="data-upload" type="file" accept=".csv" name="files">
+        Zero X: <input id="zero-x" type="checkbox">
+        Zero Y: <input id="zero-y" type="checkbox">
+        <div id="preview-area"></div>
+        <button onclick="download(preview_area.innerHTML)">Download SVG</button>
+    </main>
+    <script src="generator.js"></script>
+    <script>
+        let preview_area = document.getElementById("preview-area");
+        let zero_x = document.getElementById("zero-x");
+        let zero_y = document.getElementById("zero-y");
+
+        const fileSelector = document.getElementById('data-upload');
+        fileSelector.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+          
+            reader.onload = (e) => {
+                let str_data = e.target.result.trim().split("\n");
+                let data = [];
+                for (let point of str_data){
+                    point = point.split("\t");
+                    data.push([parseFloat(point[0]),parseFloat(point[1])]);
+                }
+                preview_area.innerHTML = buildGraph(data,zero_x.checked,zero_y.checked);
+            };
+          
+            reader.onerror = (e) => {
+              console.error("Error reading file:", e);
+            };
+          
+            reader.readAsText(file);
+        });
+
+        function download(text){
+            const blob = new Blob([text], {type: 'image/svg+xml;charset=utf-8'});
+            const svgUrl = URL.createObjectURL(blob);
+            let downloadlink = document.createElement("a");
+            downloadlink.href = svgUrl
+            downloadlink.download = "download.svg"
+            document.body.appendChild(downloadlink);
+            downloadlink.click();
+            document.body.removeChild(downloadlink);
+        }
+    </script>
+    <style>
+        #preview-area {}
+    </style>
+  </body>
+</html>

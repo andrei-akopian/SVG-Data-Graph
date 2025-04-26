@@ -1,5 +1,8 @@
 Who likes png graphs?
-Who likes svg graphs that preserve the raw data?
+Who likes svg graphs?
+
+What if SVG was a dataformat that displayed itself?
+
 SVG graphs are much easier to customize. If you want the background color or font style changed, you can do it yourself in Inkscape.
 You can add metadata in (plaintext)
 - [ ] Benchmark space of png vs svg
