@@ -79,7 +79,7 @@ function lineGraph(points, style) {
     return {
         "tag": "polyline",
         "attributes": {
-            "class": 'linegraph',
+            "class": 'dataset linegraph',
             "points": pointString,
             "style": style,
         },
@@ -98,15 +98,22 @@ function areaGraph(points, dataBox, style = "") {
         "attributes": {
             "points": pointString,
             "style": style,
+            "class": "dataset areagraph"
         },
         "content": []
     };
 }
 
 function scatterPlot(points) {
-    let ploted_points = [];
+    let ploted_points = {
+        "tag": "g",
+        "attributes": {
+            "class": "dataset scatterplot"
+        },
+        "content": []
+    };
     for (let point of points) {
-        ploted_points.push(pointCircle(point));
+        ploted_points["content"].push(pointCircle(point));
     }
     return ploted_points;
 }
@@ -175,6 +182,7 @@ function flipcontainer(dataBox) {
     return {
         "tag": "g",
         "attributes": {
+            "id": "flipcontainer-for-data",
             "transform": "scale(1,-1)",
             "transform-origin": `${dataBox[0]} ${(dataBox[1]+dataBox[3])/2}`
         },
@@ -253,8 +261,7 @@ function buildGraph(data, zero_x = false, zero_y = false) {
 
     let dataBox = dataBox_finder([data], zero_x, zero_y);
     let fc = flipcontainer(dataBox);
-    // fc['content'].push(lineGraph(data));
-    fc['content'] = scatterPlot(data);
+    fc['content'].push(scatterPlot(data));
     svg['content'].push(fc)
 
     // axies

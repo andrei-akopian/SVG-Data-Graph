@@ -8,18 +8,22 @@
   </head>
   <body>
     <main>
-        <h1>SVG Data Grapher</h1>  
-        <input id="data-upload" type="file" accept=".csv" name="files">
+        <h1>SVG Data Grapher</h1> 
+        Upload .csv or .svg <input id="data-upload" type="file" accept=".csv .svg" name="files">
         Zero X: <input id="zero-x" type="checkbox">
         Zero Y: <input id="zero-y" type="checkbox">
+        <button onclick="generateGraphFromLoadedDataset()">Generate Graph</button>
         <div id="preview-area"></div>
-        <button onclick="download(preview_area.innerHTML)">Download SVG</button>
+        <button onclick="download(preview_area.innerHTML,'image/svg+xml','download.svg')">Download SVG</button>
+        <button onclick="extractDatasetFromLoadedGraph()">Extract Data</button>
     </main>
     <script src="generator.js"></script>
+    <script src="extractor.js"></script>
     <script>
         let preview_area = document.getElementById("preview-area");
         let zero_x = document.getElementById("zero-x");
         let zero_y = document.getElementById("zero-y");
+        let data = [];
 
         const fileSelector = document.getElementById('data-upload');
         fileSelector.addEventListener('change', (event) => {
@@ -27,13 +31,19 @@
             const reader = new FileReader();
           
             reader.onload = (e) => {
-                let str_data = e.target.result.trim().split("\n");
-                let data = [];
-                for (let point of str_data){
-                    point = point.split("\t");
-                    data.push([parseFloat(point[0]),parseFloat(point[1])]);
+                if (file.type == "image/svg+xml"){
+                  preview_area.innerHTML = e.target.result;
+                } else if (file.type == "text/csv"){
+                  let str_data = e.target.result.trim().split("\n");
+                  data = [];
+                  for (let point of str_data){
+                      point = point.split("\t");
+                      data.push([
+                        parseFloat(point[0]),
+                        parseFloat(point[1])
+                      ]);
+                  }
                 }
-                preview_area.innerHTML = buildGraph(data,zero_x.checked,zero_y.checked);
             };
           
             reader.onerror = (e) => {
@@ -42,13 +52,26 @@
           
             reader.readAsText(file);
         });
-
-        function download(text){
-            const blob = new Blob([text], {type: 'image/svg+xml;charset=utf-8'});
-            const svgUrl = URL.createObjectURL(blob);
+        function generateGraphFromLoadedDataset() {
+            if (data.length == 0){
+              console.log("Dataset Empty. No Datasets Loaded. Graph not generated");
+              return;
+            }
+            preview_area.innerHTML = buildGraph(data,zero_x.checked,zero_y.checked);
+        }
+        function extractDatasetFromLoadedGraph() {
+            download(
+              extract_data(preview_area.firstElementChild).toString(),
+              "text/plain",
+              "extracted_data.txt"
+            )
+        }
+        function download(text,mimetype,filename){
+            const blob = new Blob([text], {type: mimetype + ';charset=utf-8'});
+            const downloadUrl = URL.createObjectURL(blob);
             let downloadlink = document.createElement("a");
-            downloadlink.href = svgUrl
-            downloadlink.download = "download.svg"
+            downloadlink.href = downloadUrl;
+            downloadlink.download = filename;
             document.body.appendChild(downloadlink);
             downloadlink.click();
             document.body.removeChild(downloadlink);
